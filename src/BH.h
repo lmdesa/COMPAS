@@ -34,6 +34,9 @@ public:
 
     static  double          CalculateRadiusOnPhase_Static(const double p_Mass)              { return 4.24E-6 * p_Mass; }                                            // Schwarzschild radius of Black Hole - Hurley et al. 2000, eq 94
 
+    static  double          CalculateRemnantMass_Static(const double p_Mass0);
+
+
 protected:
 
     void Initialise() {
