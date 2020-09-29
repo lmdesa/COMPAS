@@ -87,7 +87,8 @@ class CosmicIntegrator(object):
         if self.verbose:
             print("Creating instance COMPAS class User has to still set DCO and Data")
         #setting Mlower/Mupper etc to None to force warning for user
-        self.COMPAS  = ClassCOMPAS.COMPASData(path=self.pathCOMPAS, lazyData=True,\
+        self.COMPAS  = ClassCOMPAS.COMPASData(path=self.pathCOMPAS, \
+                                              fileName='', lazyData=True,\
                                               Mlower=None, Mupper=None, \
                                               binaryFraction=None)
         #####################################################
