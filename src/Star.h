@@ -5,6 +5,7 @@
 
 #include "constants.h"
 #include "typedefs.h"
+#include "profiling.h"
 #include "utils.h"
 
 #include "BaseStar.h"
@@ -65,6 +66,7 @@ public:
 
     // object identifiers - all classes have these
     OBJECT_ID                   ObjectId() const                                                                            { return m_ObjectId; }
+    OBJECT_ID                   StarObjectId() const                                                                        { return m_ObjectId; }
     OBJECT_TYPE                 ObjectType() const                                                                          { return m_ObjectType; }
     STELLAR_TYPE                InitialStellarType() const                                                                  { return m_Star->InitialStellarType(); }
     STELLAR_TYPE                StellarType() const                                                                         { return m_Star->StellarType(); }
@@ -79,7 +81,7 @@ public:
     double                      CalculateDynamicalTimescale() const                                                         { return m_Star->CalculateDynamicalTimescale(); }
     double                      CalculateNuclearTimescale() const                                                           { return m_Star->CalculateNuclearTimescale(); }
     double                      CalculateRadialExpansionTimescale() const                                                   { return m_Star->CalculateRadialExpansionTimescale(); }
-    double          CalculateThermalTimescale() const                                                                       { return m_Star->CalculateThermalTimescale(); }
+    double                      CalculateThermalTimescale() const                                                           { return m_Star->CalculateThermalTimescale(); }
     double                      COCoreMass() const                                                                          { return m_Star->COCoreMass(); }
     double                      CoreMass() const                                                                            { return m_Star->CoreMass(); }
     bool                        ExperiencedCCSN() const                                                                     { return m_Star->ExperiencedCCSN(); }
@@ -116,8 +118,11 @@ public:
     SupernovaDetailsT           SN_Details() const                                                                          { return m_Star->SN_Details(); }
     double                      SN_Phi() const                                                                              { return m_Star->SN_Phi(); }
     double                      SN_Theta() const                                                                            { return m_Star->SN_Theta(); }
+    double                      SN_TotalMassAtCOFormation() const                                                           { return m_Star->SN_TotalMassAtCOFormation(); }
     double                      SN_TrueAnomaly() const                                                                      { return m_Star->SN_TrueAnomaly(); }
+    double                      SN_EccentricAnomaly() const                                                                 { return m_Star->SN_EccentricAnomaly(); }
     SN_EVENT                    SN_Type() const                                                                             { return m_Star->SN_Type(); }
+    double                      Speed() const                                                                               { return m_Star->Speed(); }
     COMPAS_VARIABLE             StellarPropertyValue(const T_ANY_PROPERTY p_Property) const                                 { return m_Star->StellarPropertyValue(p_Property); }
     STELLAR_TYPE                StellarTypePrev() const                                                                     { return m_Star->StellarTypePrev(); }
     double                      Temperature() const                                                                         { return m_Star->Temperature(); }
@@ -153,9 +158,9 @@ public:
     double          CalculateMomentOfInertiaAU(const double p_RemnantRadius = 0.0)                              { return m_Star->CalculateMomentOfInertiaAU(p_RemnantRadius); }
 
     void            CalculateSNAnomalies(const double p_Eccentricity)                                           { m_Star->CalculateSNAnomalies(p_Eccentricity); }
-    double          CalculateSNKickVelocity(const double p_RemnantMass, const double p_EjectaMass, 
-								const STELLAR_TYPE p_StellarType)               { return m_Star->CalculateSNKickVelocity(p_RemnantMass, 
-																p_EjectaMass, p_StellarType); }
+    double          CalculateSNKickMagnitude(const double p_RemnantMass, const double p_EjectaMass, 
+                                             const STELLAR_TYPE p_StellarType)                                  { return m_Star->CalculateSNKickMagnitude(p_RemnantMass, 
+                                                                                                                         p_EjectaMass, p_StellarType); }
 
     double          CalculateThermalMassLossRate()                                                              { return m_Star->CalculateThermalMassLossRate(); }
 
@@ -178,7 +183,7 @@ public:
 
     MT_CASE         DetermineMassTransferCase()                                                                 { return m_Star->DetermineMassTransferCase(); }
 
-    void            Evolve(const int p_StepNum);
+    void            Evolve(const long int p_Id);
 
     double          EvolveOneTimestep(const double p_Dt);
 
@@ -199,7 +204,7 @@ public:
     void            SetSNCurrentEvent(const SN_EVENT p_SNEvent)                                                 { m_Star->SetSNCurrentEvent(p_SNEvent); }
     void            SetSNPastEvent(const SN_EVENT p_SNEvent)                                                    { m_Star->SetSNPastEvent(p_SNEvent); }
 
-    double     	    SN_KickVelocity()       									                                { return m_Star->SN_KickVelocity() ; }
+    double     	    SN_KickMagnitude()       									                                { return m_Star->SN_KickMagnitude() ; }
 
     STELLAR_TYPE    SwitchTo(const STELLAR_TYPE p_StellarType, bool p_SetInitialType = false);
 
@@ -215,6 +220,8 @@ public:
                                                       const double p_DeltaTime,
                                                       const bool   p_Switch = true,
                                                       const bool   p_ForceRecalculate = false);
+
+    void            UpdateComponentVelocity(const Vector3d p_newVelocity)                                       { m_Star->UpdateComponentVelocity(p_newVelocity); }
 
     void            UpdateInitialMass()                                                                         { m_Star->UpdateInitialMass(); }
 
@@ -239,6 +246,7 @@ private:
 
     OBJECT_ID   m_ObjectId;                                                                                     // instantiated object's unique object id
     OBJECT_TYPE m_ObjectType;                                                                                   // instantiated object's object type
+    long int    m_Id;                                                                                           // Id used to name output files - uses p_Id as passed (usually the step number of multiple single stars being produced)
 
     BaseStar   *m_Star;                                                                                         // pointer to current star
     BaseStar   *m_SaveStar;                                                                                     // pointer to saved star

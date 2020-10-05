@@ -22,7 +22,7 @@
  * @return                                      Hydrogen rate constant (Msol Lsol^-1 Myr^-1)
  */
 double GiantBranch::CalculateHRateConstant_Static(const double p_Mass) {
-    return pow(10.0, std::max(-4.8, std::min((-5.7 + (0.8 * p_Mass)), (-4.1 + (0.14 * p_Mass)))));
+    return PPOW(10.0, std::max(-4.8, std::min((-5.7 + (0.8 * p_Mass)), (-4.1 + (0.14 * p_Mass)))));
 }
 
 
@@ -61,9 +61,9 @@ void GiantBranch::CalculateTimescales(const double p_Mass, DBL_VECTOR &p_Timesca
 
     MainSequence::CalculateTimescales(p_Mass, p_Timescales);   // calculate common values
 
-    timescales(tinf1_FGB) = timescales(tBGB) + ((1.0 / (p1 * gbParams(AH) * gbParams(D))) * pow((gbParams(D) / LBGB), p1_p));
-    timescales(tMx_FGB)   = timescales(tinf1_FGB) - ((timescales(tinf1_FGB) - timescales(tBGB)) * pow((LBGB / gbParams(Lx)), p1_p));
-    timescales(tinf2_FGB) = timescales(tMx_FGB) + ((1.0 / (q1 * gbParams(AH) * gbParams(B))) * pow((gbParams(B) / gbParams(Lx)), q1_q));
+    timescales(tinf1_FGB) = timescales(tBGB) + ((1.0 / (p1 * gbParams(AH) * gbParams(D))) * PPOW((gbParams(D) / LBGB), p1_p));
+    timescales(tMx_FGB)   = timescales(tinf1_FGB) - ((timescales(tinf1_FGB) - timescales(tBGB)) * PPOW((LBGB / gbParams(Lx)), p1_p));
+    timescales(tinf2_FGB) = timescales(tMx_FGB) + ((1.0 / (q1 * gbParams(AH) * gbParams(B))) * PPOW((gbParams(B) / gbParams(Lx)), q1_q));
 
     timescales(tHeI)      = CalculateLifetimeToHeIgnition(p_Mass, timescales(tinf1_FGB), timescales(tinf2_FGB));
     timescales(tHeMS)     = HeMS::CalculateLifetimeOnPhase_Static(p_Mass);
@@ -85,7 +85,7 @@ void GiantBranch::CalculateTimescales(const double p_Mass, DBL_VECTOR &p_Timesca
  * @return                                      Core mass - Luminosity relation parameter B
  */
 double GiantBranch::CalculateCoreMass_Luminosity_B_Static(const double p_Mass) {
-    return std::max(3.0E4, (500.0 + (1.75E4 * pow(p_Mass, 0.6))));
+    return std::max(3.0E4, (500.0 + (1.75E4 * PPOW(p_Mass, 0.6))));
 }
 
 
@@ -121,7 +121,7 @@ double GiantBranch::CalculateCoreMass_Luminosity_D_Static(const double p_Mass, c
         }
     }
 
-    return pow(10.0, logD);
+    return PPOW(10.0, logD);
 
 #undef massCutoffs
 }
@@ -211,7 +211,7 @@ double GiantBranch::CalculateCoreMass_Luminosity_q_Static(const double p_Mass, c
 double GiantBranch::CalculateCoreMass_Luminosity_Mx_Static(const DBL_VECTOR &p_GBParams) {
 #define gbParams(x) p_GBParams[static_cast<int>(GBP::x)]    // for convenience and readability - undefined at end of function
 
-    return pow((gbParams(B) / gbParams(D)), (1.0 / (gbParams(p) - gbParams(q))));
+    return PPOW((gbParams(B) / gbParams(D)), (1.0 / (gbParams(p) - gbParams(q))));
 
 #undef gbParams
 }
@@ -232,7 +232,7 @@ double GiantBranch::CalculateCoreMass_Luminosity_Lx_Static(const DBL_VECTOR &p_G
 #define gbParams(x) p_GBParams[static_cast<int>(GBP::x)]    // for convenience and readability - undefined at end of function
     // since the mass used here is the mass at crossover (Mx), these
     // should give the same answer - but we'll take the minimum anyway
-    return std::min((gbParams(B) * pow(gbParams(Mx), gbParams(q))), (gbParams(D) * pow(gbParams(Mx), gbParams(p))));
+    return std::min((gbParams(B) * PPOW(gbParams(Mx), gbParams(q))), (gbParams(D) * PPOW(gbParams(Mx), gbParams(p))));
 
 #undef gbParams
 }
@@ -356,7 +356,7 @@ double GiantBranch::CalculatePerturbationMu() {
     double kappa = -0.5;
     double L0    = 7.0E4;
 
-    return ((m_Mass - m_CoreMass) / m_Mass) * (std::min(5.0, std::max(1.2, pow((m_Luminosity / L0), kappa))));
+    return ((m_Mass - m_CoreMass) / m_Mass) * (std::min(5.0, std::max(1.2, PPOW((m_Luminosity / L0), kappa))));
 }
 
 
@@ -389,8 +389,8 @@ void GiantBranch::PerturbLuminosityAndRadius() {
         double s = CalculatePerturbationS(m_Mu, m_Mass);
         double r = CalculatePerturbationR(m_Mu, m_Mass, m_Radius, Rc);
 
-        m_Luminosity = Lc * pow((m_Luminosity / Lc), s);        
-        m_Radius     = Rc * pow((m_Radius / Rc), r);
+        m_Luminosity = Lc * PPOW((m_Luminosity / Lc), s);        
+        m_Radius     = Rc * PPOW((m_Radius / Rc), r);
     }
 }
 #else
@@ -423,8 +423,8 @@ void GiantBranch::PerturbLuminosityAndRadius() { }
 double GiantBranch::CalculateLuminosityAtPhaseBase_Static(const double p_Mass, const DBL_VECTOR &p_AnCoefficients) {
 #define a p_AnCoefficients  // for convenience and readability - undefined at end of function
 
-    double top    = (a[27] * pow(p_Mass, a[31])) + (a[28] * pow(p_Mass, C_COEFF.at(2)));
-    double bottom = a[29] + (a[30] * pow(p_Mass, C_COEFF.at(3))) + pow(p_Mass, a[32]);
+    double top    = (a[27] * PPOW(p_Mass, a[31])) + (a[28] * PPOW(p_Mass, C_COEFF.at(2)));
+    double bottom = a[29] + (a[30] * PPOW(p_Mass, C_COEFF.at(3))) + PPOW(p_Mass, a[32]);
 
     return top / bottom;
 
@@ -472,8 +472,8 @@ double GiantBranch::CalculateLuminosityOnZAHB_Static(const double      p_Mass,
     double mu     = (p_Mass - p_CoreMass) / (p_MHeF - p_CoreMass);
     double alpha2 = (b[18] + LZHe - LminHe) / (LminHe - LZHe);
 
-    double first  = (1.0 + b[20]) / (1.0 + (b[20] * pow(mu, 1.6479)));
-    double second = (b[18] * pow(mu, b[19])) / (1.0 + alpha2 * exp(15.0 * (p_Mass - p_MHeF)));
+    double first  = (1.0 + b[20]) / (1.0 + (b[20] * PPOW(mu, 1.6479)));
+    double second = (b[18] * PPOW(mu, b[19])) / (1.0 + alpha2 * exp(15.0 * (p_Mass - p_MHeF)));
 
     return LZHe + (first * second);
 
@@ -507,8 +507,8 @@ double GiantBranch::CalculateLuminosityAtHeIgnition_Static(const double      p_M
 #define b p_BnCoefficients  // for convenience and readability - undefined at end of function
 
     return (utils::Compare(p_Mass, p_MHeF) < 0)
-            ? (b[9] * pow(p_Mass, b[10])) / (1.0 + (p_Alpha1 * exp(15.0 * (p_Mass - p_MHeF))))
-            : (b[11] + (b[12] * pow(p_Mass, 3.8))) / (b[13] + (p_Mass * p_Mass));
+            ? (b[9] * PPOW(p_Mass, b[10])) / (1.0 + (p_Alpha1 * exp(15.0 * (p_Mass - p_MHeF))))
+            : (b[11] + (b[12] * PPOW(p_Mass, 3.8))) / (b[13] + (p_Mass * p_Mass));
 
 #undef b
 }
@@ -561,9 +561,9 @@ double GiantBranch::CalculateRemnantLuminosity() {
 double GiantBranch::CalculateRadiusOnPhase_Static(const double p_Mass, const double p_Luminosity, const DBL_VECTOR &p_BnCoefficients) {
 #define b p_BnCoefficients  // for convenience and readability - undefined at end of function
 
-    double A = std::min((b[4] * pow(p_Mass, -b[5])), (b[6] * pow(p_Mass, -b[7])));  // Hurley et al. 2000, just before eq 47
+    double A = std::min((b[4] * PPOW(p_Mass, -b[5])), (b[6] * PPOW(p_Mass, -b[7])));  // Hurley et al. 2000, just before eq 47
 
-    return A * (pow(p_Luminosity, b[1]) + (b[2] * pow(p_Luminosity, b[3])));        // Hurley et al. 2000, eq 46
+    return A * (PPOW(p_Luminosity, b[1]) + (b[2] * PPOW(p_Luminosity, b[3])));        // Hurley et al. 2000, eq 46
 
 #undef b
 }
@@ -608,7 +608,7 @@ double GiantBranch::CalculateRadiusOnZAHB_Static(const double      p_Mass,
     double RGB   = GiantBranch::CalculateRadiusOnPhase_Static(p_Mass, LZAHB, p_BnCoefficients);
 
     double mu    = (p_Mass - p_CoreMass) / (p_MHeF - p_CoreMass);
-    double f     = ((1.0 + b[21]) * pow(mu, b[22])) / (1.0 + b[21] * pow(mu, b[23]));
+    double f     = ((1.0 + b[21]) * PPOW(mu, b[22])) / (1.0 + b[21] * PPOW(mu, b[23]));
 
     return ((1.0 - f)) * RZHe + (f * RGB);
 
@@ -645,7 +645,7 @@ double GiantBranch::CalculateRadiusAtHeIgnition(const double p_Mass) {
     }
     else {
         double mu = log10(p_Mass / 12.0) / log10(massCutoffs(MFGB) / 12.0);
-        RHeI      = RmHe * pow((RGB_LHeI / RmHe), mu);
+        RHeI      = RmHe * PPOW((RGB_LHeI / RmHe), mu);
     }
 
     return RHeI;
@@ -718,7 +718,7 @@ double GiantBranch::CalculateRadialExtentConvectiveEnvelope() {
 double GiantBranch::CalculateCoreMassAtBAGB(const double p_Mass) {
 #define b m_BnCoefficients  // for convenience and readability - undefined at end of function
 
-    return sqrt(sqrt((b[36] * pow(p_Mass, b[37])) + b[38]));   // sqrt() is much faster than pow()
+    return sqrt(sqrt((b[36] * PPOW(p_Mass, b[37])) + b[38]));   // sqrt() is much faster than PPOW()
 
 #undef b
 }
@@ -741,7 +741,7 @@ double GiantBranch::CalculateCoreMassAtBAGB(const double p_Mass) {
 double GiantBranch::CalculateCoreMassAtBAGB_Static(const double p_Mass, const DBL_VECTOR &p_BnCoefficients) {
 #define b p_BnCoefficients  // for convenience and readability - undefined at end of function
 
-    return sqrt(sqrt((b[36] * pow(p_Mass, b[37])) + b[38]));   // sqrt() is much faster than pow()
+    return sqrt(sqrt((b[36] * PPOW(p_Mass, b[37])) + b[38]));   // sqrt() is much faster than PPOW()
 
 #undef b
 }
@@ -767,9 +767,9 @@ double GiantBranch::CalculateCoreMassAtBGB(const double p_Mass, const DBL_VECTOR
 
     double luminosity = GiantBranch::CalculateLuminosityAtPhaseBase_Static(massCutoffs(MHeF), m_AnCoefficients);
     double Mc_MHeF    = BaseStar::CalculateCoreMassGivenLuminosity_Static(luminosity, p_GBParams);
-    double c          = (Mc_MHeF * Mc_MHeF * Mc_MHeF * Mc_MHeF) - (MC_L_C1 * pow(massCutoffs(MHeF), MC_L_C2));  // pow() is slow - use multiplication
+    double c          = (Mc_MHeF * Mc_MHeF * Mc_MHeF * Mc_MHeF) - (MC_L_C1 * PPOW(massCutoffs(MHeF), MC_L_C2));  // pow() is slow - use multiplication
 
-    return std::min((0.95 * gbParams(McBAGB)), sqrt(sqrt(c + (MC_L_C1 * pow(p_Mass, MC_L_C2)))));               // sqrt is much faster than pow()
+    return std::min((0.95 * gbParams(McBAGB)), sqrt(sqrt(c + (MC_L_C1 * PPOW(p_Mass, MC_L_C2)))));               // sqrt is much faster than PPOW()
 
 #undef massCutoffs
 #undef gbParams
@@ -803,9 +803,9 @@ double GiantBranch::CalculateCoreMassAtBGB_Static(const double      p_Mass,
 
     double luminosity = GiantBranch::CalculateLuminosityAtPhaseBase_Static(massCutoffs(MHeF), p_AnCoefficients);
     double Mc_MHeF    = BaseStar::CalculateCoreMassGivenLuminosity_Static(luminosity, p_GBParams);
-    double c          = (Mc_MHeF * Mc_MHeF * Mc_MHeF * Mc_MHeF) - (MC_L_C1 * pow(massCutoffs(MHeF), MC_L_C2));  // pow() is slow - use multiplication
+    double c          = (Mc_MHeF * Mc_MHeF * Mc_MHeF * Mc_MHeF) - (MC_L_C1 * PPOW(massCutoffs(MHeF), MC_L_C2));  // pow() is slow - use multiplication
 
-    return std::min((0.95 * gbParams(McBAGB)), sqrt(sqrt(c + (MC_L_C1 * pow(p_Mass, MC_L_C2)))));               // sqrt is much faster than pow()
+    return std::min((0.95 * gbParams(McBAGB)), sqrt(sqrt(c + (MC_L_C1 * PPOW(p_Mass, MC_L_C2)))));               // sqrt is much faster than PPOW()
 
 #undef massCutoffs
 #undef gbParams
@@ -856,9 +856,9 @@ double GiantBranch::CalculateCoreMassAtHeIgnition(const double p_Mass) {
         double luminosity_MHeF = CalculateLuminosityAtHeIgnition_Static(massCutoffs(MHeF), m_Alpha1, massCutoffs(MHeF), m_BnCoefficients);
         double Mc_MHeF         = BaseStar::CalculateCoreMassGivenLuminosity_Static(luminosity_MHeF, m_GBParams);
         double McBAGB          = CalculateCoreMassAtBAGB(p_Mass);
-        double c               = (Mc_MHeF * Mc_MHeF * Mc_MHeF * Mc_MHeF) - (MC_L_C1 * pow(massCutoffs(MHeF), MC_L_C2)); // pow() is slow - use multiplication
+        double c               = (Mc_MHeF * Mc_MHeF * Mc_MHeF * Mc_MHeF) - (MC_L_C1 * PPOW(massCutoffs(MHeF), MC_L_C2)); // pow() is slow - use multiplication
 
-        coreMass               = std::min((0.95 * McBAGB), sqrt(sqrt(c + (MC_L_C1 * pow(p_Mass, MC_L_C2)))));           // sqrt() is much faster than pow()
+        coreMass               = std::min((0.95 * McBAGB), sqrt(sqrt(c + (MC_L_C1 * PPOW(p_Mass, MC_L_C2)))));           // sqrt() is much faster than PPOW()
     }
 
     return coreMass;
@@ -973,8 +973,8 @@ double GiantBranch::CalculateLifetimeToHeIgnition(const double p_Mass, const dou
     double q1   = gbParams(q) - 1.0;
 
     return utils::Compare(LHeI, gbParams(Lx)) <= 0
-            ? p_Tinf1_FGB - (1.0 / (p1 * gbParams(AH) * gbParams(D))) * pow((gbParams(D) / LHeI), (p1 / gbParams(p)))
-            : p_Tinf2_FGB - (1.0 / (q1 * gbParams(AH) * gbParams(B))) * pow((gbParams(B) / LHeI), (q1 / gbParams(q)));
+            ? p_Tinf1_FGB - (1.0 / (p1 * gbParams(AH) * gbParams(D))) * PPOW((gbParams(D) / LHeI), (p1 / gbParams(p)))
+            : p_Tinf2_FGB - (1.0 / (q1 * gbParams(AH) * gbParams(B))) * PPOW((gbParams(B) / LHeI), (q1 / gbParams(q)));
 
 #undef massCutoffs
 #undef gbParams
@@ -1328,14 +1328,13 @@ double GiantBranch::CalculateFallbackFractionDelayed(const double p_PreSNMass, c
  * Ref?  Fryer et al. 2012?
  *
  *
- * std::tuple<double, double> CalculateRemnantMassByFryer2012(const SNE p_Engine, const double p_Mass, const double p_COCoreMass)
+ * std::tuple<double, double> CalculateRemnantMassByFryer2012(const double p_Mass, const double p_COCoreMass)
  *
- * @param   [IN]    p_Engine                    The SN Engine to use for the calculation
  * @param   [IN]    p_Mass                      Pre supernova mass in Msol
  * @param   [IN]    p_COCoreMass                Pre supernova Carbon Oxygen (CO) core mass in Msol
  * @return                                      Tuple containing Remnant mass in Msol and updated fraction of mass falling back onto compact object
  */
-std::tuple<double, double> GiantBranch::CalculateRemnantMassByFryer2012(const SN_ENGINE p_Engine, const double p_Mass, const double p_COCoreMass) {
+std::tuple<double, double> GiantBranch::CalculateRemnantMassByFryer2012(const double p_Mass, const double p_COCoreMass) {
 
     double mProto;
     double fallbackMass;
@@ -1344,7 +1343,7 @@ std::tuple<double, double> GiantBranch::CalculateRemnantMassByFryer2012(const SN
     double fallbackFraction         = 0.0;
     double gravitationalRemnantMass = 0.0;
 
-    switch (p_Engine) {                                                                                     // which SN_ENGINE?
+    switch (OPTIONS->FryerSupernovaEngine()) {                                                                                     // which SN_ENGINE?
 
         case SN_ENGINE::DELAYED:                                                                            // DELAYED
 
@@ -1415,19 +1414,18 @@ double GiantBranch::CalculateRemnantMassByBelczynski2002(const double p_Mass, co
  * This function determines which prescription is used for the core collapse SN (via program options)
  *
  * The function calls prescription functions that update the following parameters:
- *      Mass, stellarType, drawnKickVelocity, kickVelocity
+ *      Mass, stellarType, drawnKickMagnitude, kickMagnitude
  *
  * At the end of this function we set the following parameters which are (so far) independent of the
  * ccSN prescriptions (but do depend on the parameters above):
  *      Luminosity, Radius, Temperature, supernova events: current = SN, past = CCSN
  *
  *
- * STELLAR_TYPE ResolveCoreCollapseSN(const SNE SNEngine)
+ * STELLAR_TYPE ResolveCoreCollapseSN()
  *
- * @param   [IN]    SNEngine                    Fryer SN Engine to use (if required)
  * @return                                      The stellar type to which the star should evolve
  */
-STELLAR_TYPE GiantBranch::ResolveCoreCollapseSN(const SN_ENGINE SNEngine) {
+STELLAR_TYPE GiantBranch::ResolveCoreCollapseSN() {
 
     STELLAR_TYPE stellarType = m_StellarType;
     double mass = m_Mass;                                                                                   // initial mass
@@ -1437,7 +1435,7 @@ STELLAR_TYPE GiantBranch::ResolveCoreCollapseSN(const SN_ENGINE SNEngine) {
         case REMNANT_MASS_PRESCRIPTION::HURLEY2000:                                                         // Hurley 2000
 
             m_SupernovaDetails.fallbackFraction = 0.0;                                                      // Not defined
-            m_Mass                              = NS::CalculateRemnantMass_Static(m_CoreMass);
+            m_Mass                              = NS::CalculateRemnantMass_Static(m_COCoreMass);
             break;
 
         case REMNANT_MASS_PRESCRIPTION::BELCZYNSKI2002:                                                     // Belczynski 2002
@@ -1448,7 +1446,7 @@ STELLAR_TYPE GiantBranch::ResolveCoreCollapseSN(const SN_ENGINE SNEngine) {
 
         case REMNANT_MASS_PRESCRIPTION::FRYER2012:                                                          // Fryer 2012
 
-            std::tie(m_Mass, m_SupernovaDetails.fallbackFraction) = CalculateRemnantMassByFryer2012(SNEngine, m_Mass, m_COCoreMass);
+            std::tie(m_Mass, m_SupernovaDetails.fallbackFraction) = CalculateRemnantMassByFryer2012(m_Mass, m_COCoreMass);
             break;
 
         case REMNANT_MASS_PRESCRIPTION::MULLER2016:                                                         // Muller 2016
@@ -1481,6 +1479,9 @@ STELLAR_TYPE GiantBranch::ResolveCoreCollapseSN(const SN_ENGINE SNEngine) {
             stellarType = STELLAR_TYPE::BLACK_HOLE;
         else
             stellarType = STELLAR_TYPE::NEUTRON_STAR;
+    }
+    else if (OPTIONS->RemnantMassPrescription() == REMNANT_MASS_PRESCRIPTION::HURLEY2000) {
+        stellarType = (utils::Compare(m_Mass, 1.8 ) > 0)? STELLAR_TYPE::BLACK_HOLE : STELLAR_TYPE::NEUTRON_STAR;    //Hurley+ 2000, Eq. (92)
     }
     else if (utils::Compare(m_Mass, OPTIONS->MaximumNeutronStarMass()) > 0) {
         std::tie(m_Luminosity, m_Radius, m_Temperature) = BH::CalculateCoreCollapseSNParams_Static(m_Mass);
@@ -1550,8 +1551,8 @@ STELLAR_TYPE GiantBranch::ResolveTypeIIaSN() {
     m_Luminosity        = 0.0;
     m_Temperature       = 0.0;
 
-    m_SupernovaDetails.drawnKickVelocity = 0.0;
-    m_SupernovaDetails.kickVelocity      = 0.0;
+    m_SupernovaDetails.drawnKickMagnitude = 0.0;
+    m_SupernovaDetails.kickMagnitude      = 0.0;
 
     return STELLAR_TYPE::MASSLESS_REMNANT;
 }
@@ -1582,8 +1583,8 @@ STELLAR_TYPE GiantBranch::ResolvePairInstabilitySN() {
     m_Radius      = 0.0;
     m_Temperature = 0.0;
 
-    m_SupernovaDetails.drawnKickVelocity = 0.0;
-    m_SupernovaDetails.kickVelocity      = 0.0;
+    m_SupernovaDetails.drawnKickMagnitude = 0.0;
+    m_SupernovaDetails.kickMagnitude      = 0.0;
     m_SupernovaDetails.fallbackFraction  = 0.0;
 
     SetSNCurrentEvent(SN_EVENT::PISN);                                                                  // pair instability SN happening now
@@ -1695,7 +1696,7 @@ STELLAR_TYPE GiantBranch::ResolveSupernova() {
         m_SupernovaDetails.coreMassAtCOFormation   = m_CoreMass;
 
         double snMass = CalculateInitialSupernovaMass();                                            // calculate SN initial mass
-
+        
         SetSNHydrogenContent();                                                                     // ALEJANDRO - 04/05/2018 - Check if the SN is H-rich or H-poor. For now, classify it for all possible SNe and not only CCSN forming NS.
 
         if (                             OPTIONS->UsePulsationalPairInstability()              &&
@@ -1717,10 +1718,19 @@ STELLAR_TYPE GiantBranch::ResolveSupernova() {
             stellarType = ResolveElectronCaptureSN();
         }
         else {                                                                                      // Core Collapse SuperNova
-            stellarType = ResolveCoreCollapseSN(OPTIONS->FryerSupernovaEngine());
+            stellarType = ResolveCoreCollapseSN();
         }
             
-    	CalculateSNKickVelocity(m_Mass, m_SupernovaDetails.totalMassAtCOFormation - m_Mass, stellarType);
+    	CalculateSNKickMagnitude(m_Mass, m_SupernovaDetails.totalMassAtCOFormation - m_Mass, stellarType);
+
+        // stash SN details for later printing to the SSE Supernova log
+        // can't print it now because we may revert state (in Star::EvolveOneTimestep())
+        // will be printed in Star::EvolveOneTimestep() after timestep is accepted (i.e. we don't revert state)
+        // need to record the stellar type to which the star will switch if we don't revert state
+
+        if (OPTIONS->SingleStar()) {                                                                // only if SSE (BSE does its own SN printing)
+            StashSupernovaDetails(stellarType);
+        }
     }
 
     return stellarType;

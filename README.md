@@ -1,6 +1,6 @@
 [//]: ## (grip -b README.md)
 
-![COMPASlogo](docs/COMPASlogo.png)
+![COMPASlogo](docs/media/COMPASlogo.png)
 
 # Compact Object Mergers: Population Astrophysics & Statistics
 
@@ -13,6 +13,7 @@ remnants.  It has been used for inference from observations of gravitational-wav
 [Getting started](./docs/getting_started.md)  
 [Specifications](./docs/COMPAS_Doc.pdf)  
 [Post-processing](./postProcessing/README.txt)  
+[Running COMPAS inside a Docker container](./docs/docker.md)  
 
 ## Contact
 Please email your queries to compas-user@googlegroups.com. You are also welcome to join the [COMPAS User Google Group](https://groups.google.com/forum/#!members/compas-user) to engage in discussions with COMPAS users and developers.
@@ -28,6 +29,7 @@ We anticipate releasing a more detailed and comprehensive methods paper in the f
 >_Simulations in this paper made use of the COMPAS rapid binary population synthesis code (version X.X.X), which is freely available at http://github.com/TeamCOMPAS/COMPAS_.
 
 Furthermore,
+
   * If you use COMPAS's importance sampling algorithm STROOPWAFEL, please cite 
 
      Broekgaarden F. S., Justham S., de Mink S. E., Gair J., Mandel I., Stevenson S., Barrett J. W., Vigna-Gómez A., Neijssel C. J., 2019, [MNRAS, 490, 5228](https://ui.adsabs.harvard.edu/abs/2019MNRAS.490.5228B/abstract)
