@@ -1,5 +1,5 @@
 import numpy as np 
-import h5py as h5 #for reading in data
+import h5py as h5
 import os
 
 def threePartBrokenPowerLaw(x, x1=0.01, x2=0.08, x3=0.5, x4=200, a1=-0.3, \
@@ -141,32 +141,79 @@ def inverseCDF(C, CDF, index, xmin, xmax):
     return (top/bottom)**(1./(index+1))
 
 
+def massEvolvedAtEachZ(path, fileName):
+    """Reads COMPAS SystemParameters output and returns an array containing
+    the total mass evolved by COMPAS at each metallicity.
 
-def retrieveMassEvolvedPerZ(path, fileName):
-    #Thanks Jim Barrett for this code snippet :+1:
-    
-    #After running this, I am not so happy anymore
-    #This is too fast, no time to walk away and grab coffee ;p
+    Args:
+        path (str): Path to directory containing COMPAS h5 file.
+        fileName (str): Name of COMPAS h5 file.
+
+    Returns:
+        ndarray: Array containing the total stellar mass evolved by COMPAS at each metallicity.
+    """    
     path = os.path.join(path, fileName) 
-    f = h5.File(path, 'r') # open in read-only
+    f = h5.File(path, 'r')
+    systemParameters = f['SystemParameters']
 
-    allSystems = f['SystemParameters']
-    metals = (allSystems['Metallicity@ZAMS_1'])[()]
-    m1s = (allSystems['Mass@ZAMS_1'])[()]
-    m2s = (allSystems['Mass@ZAMS_2'])[()]
-    total = []
-    for Z in np.unique(metals):
-        mask = metals == Z
-        total.append(np.sum(m1s[mask]) + np.sum(m2s[mask]))
+    metallicityGrid = (systemParameters['Metallicity@ZAMS_1'])[()]
+    metallicityGrid = np.unique(metallicityGrid)
+    M1 = (systemParameters['Mass@ZAMS_1'])[()]
+    M2 = (systemParameters['Mass@ZAMS_2'])[()]
+
+    totalMassEvolvedAtEachZ = []
+    for Z in metallicityGrid:
+        totalMassEvolvedAtEachZ.append(
+            np.sum(M1[metallicityGrid == Z]) + np.sum(M2[metallicityGrid == Z])
+            )
     f.close()
-    return np.array(total)
+
+    return np.array(totalMassEvolvedAtEachZ)
 
 
+def massFormedAtEachZ(
+    path=None,
+    fileName=None,
+    Mlower=None,
+    Mupper=None,
+    binaryFraction=0.7,
+    x1=0.01,
+    x2=0.08,
+    x3=0.5,
+    x4=200.,
+    a1=-0.3,
+    a2=-1.3,
+    a3=-2.3,
+    C1=1.,
+    Mmax=200):
+    """Returns the total star-forming mass at each metallicity
 
-def totalMassEvolvedPerZ(path=None, fileName=None, Mlower=None, Mupper=None, binaryFraction=0.7, \
-                         x1=0.01, x2=0.08, x3=0.5, x4=200., a1=-0.3, a2=-1.3, a3=-2.3, C1=1., Mmax=200):
+    Args:
+        path (str, optional): Path to directory containing COMPAS h5 file. Defaults to None.
+        fileName (str, optional): Name of COMPAS h5 file. Defaults to None.
+        Mlower (float, optional): Minimum mass when drawing from Kroupa IMF. Defaults to None.
+        Mupper (float, optional): Maximum mass when drawing from Kroupa IMF. Defaults to None.
+        binaryFraction (float, optional): Binary Fraction. Defaults to 0.7.
+        x1 (float, optional): Parameter in Kroupa IMF. Defaults to 0.01.
+        x2 (float, optional): Parameter in Kroupa IMF. Defaults to 0.08.
+        x3 (float, optional): Parameter in Kroupa IMF. Defaults to 0.5.
+        x4 (float, optional): Parameter in Kroupa IMF. Defaults to 200..
+        a1 (float, optional): Power law index in Kroupa IMF. Defaults to -0.3.
+        a2 (float, optional): Power law index in Kroupa IMF. Defaults to -1.3.
+        a3 (float, optional): Power law index in Kroupa IMF. Defaults to -2.3.
+        C1 (float, optional): Power law index in Kroupa IMF. Defaults to 1..
+        Mmax (float, optional): Maximum mass in Kroupa IMF. Defaults to 200.
 
-    #the default values assume a Kroupa IMF for M1
+    Raises:
+        TypeError: If path not specified.
+        TypeError: If Mlower not specified.
+        TypeError: If Mupper not specified.
+
+    Returns:
+        float: Ratio of the total stellar mass formed to the actual amount of mass evolved by COMPAS.
+        ndarray: Array containing the total stellar mass formed at each metallicity corresponding to the actual amount of mass evolved by COMPAS.
+    """    
+    
     if path is None:
         raise TypeError("\n Need to give path to directory COMPASOutput.h5")
     if Mlower is None:
@@ -175,8 +222,17 @@ def totalMassEvolvedPerZ(path=None, fileName=None, Mlower=None, Mupper=None, bin
         raise TypeError("\n Need to give upper limit M1 of pythonSubmit")
     
 
-    M1, M2 = createSampleUniverse(binaryFraction=binaryFraction, x1=x1, x2=x2, x3=x3, x4=x4, \
-                                  a1=a1, a2=a2, a3=a3, C1=C1, Mmax=Mmax)
+    M1, M2 = createSampleUniverse(
+        binaryFraction=binaryFraction,
+        x1=x1,
+        x2=x2,
+        x3=x3,
+        x4=x4,
+        a1=a1,
+        a2=a2,
+        a3=a3,
+        C1=C1,
+        Mmax=Mmax)
 
     totalMassInStarFormation = np.sum(M1) + np.sum(M2)
 
@@ -189,15 +245,15 @@ def totalMassEvolvedPerZ(path=None, fileName=None, Mlower=None, Mupper=None, bin
 
     #multiplication fraction
     fraction = totalMassEvolvedCOMPAS/float(totalMassInStarFormation)
+    multiplicationFactor = 1./fraction
 
     #so we need to muliplu the mass evolved per metallicity times (1/fraction)
     #to know the total mass evolved per metallicity
-    MassEvolvedPerZ = retrieveMassEvolvedPerZ(path, fileName)
+    massEvolvedAtEachZ = retrieveMassEvolvedAtEachZ(path, fileName)
 
-    multiplicationFactor = 1./fraction
-
-    totalMassEvolvedPerMetallicity = (MassEvolvedPerZ)/(fraction)
-    return multiplicationFactor, totalMassEvolvedPerMetallicity
+    massFormedAtEachZ = massEvolvedAtEachZ/fraction
+    
+    return multiplicationFactor, massFormedAtEachZ
 
 
 
