@@ -237,7 +237,8 @@ class MSSFR(object):
             Mupper = 10**self.Savaglio2005ZM(Zupper_Zsun, z)
             Mlower = 10**self.Savaglio2005ZM(Zlower_Zsun, z)
         else:     
-             raise ValueError("The mass-metallicity prescription is not recognised.\n"+\
+             raise ValueError("The mass-metallicity prescription that is given: "+ self.ZMprescription +\
+                              " is not recognised.\n"+\
                               "Current (trusted) options are:\n"+\
                               "Ma et al. (2016), Langer et al. (2006),"+\
                               "Langer et al. +offset (2006)\n"+\
@@ -254,7 +255,8 @@ class MSSFR(object):
         elif self.GSMFprescription == 'Furlong et al. (2015) Double':
             logMc,  phi1, a1, phi2, a2 = self.lineairFitDoubleSchechterFurlong(z)
         else:
-            raise ValueError( "This GSMF prescription is not recognised.\n"+\
+            raise ValueError( "The GSMF prescription that is given: " + self.GSMFprescription +\
+                              "  is not recognised.\n"+\
                               "Current options are:\n"+\
                               "Panter et al. (2004) Single, Furlong et al. (2015) Single, Furlong et al. (2015) Double \n"+\
                               "Apologies but I will now break")
@@ -470,7 +472,8 @@ class MSSFR(object):
         elif (self.SFRprescription == 'Custom SFR'):
             SFR = self.SFR_Custom(redshifts)
         else:
-            raise ValueError( "This SFR prescription is not recognised.\n"+\
+            raise ValueError( "The SFR prescription that is given: " + self.SFRprescription +\
+                              " is not recognised.\n"+\
                               "Current options are:\n"+\
                               "Madau et al. (2014),Madau et al. (2017),Neijssel et al. (2019), Strolger et al. (2004) \n"+\
                               "Apologies but I will now break")
