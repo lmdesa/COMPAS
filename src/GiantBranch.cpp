@@ -986,7 +986,7 @@ double GiantBranch::CalculateLifetimeToHeIgnition(const double p_Mass, const dou
 /*
  * Calculate thermal timescale
  *
- * Kalogera & Webbink 1996, eq 2 [note that (61) of BSE proposes a value a factor of 3 smaller]
+ * Kalogera & Webbink 1996, eq 2 [note that (61) of BSE proposes a value a factor of 10/3 greater]
  *
  *
  * double CalculateThermalTimescale(const double p_Mass, const double p_Radius, const double p_Luminosity, const double p_EnvMass) const
@@ -1838,6 +1838,14 @@ STELLAR_TYPE GiantBranch::ResolveSupernova() {
         }
             
     	CalculateSNKickMagnitude(m_Mass, m_SupernovaDetails.totalMassAtCOFormation - m_Mass, stellarType);
+
+        // RTW hack
+        if (utils::IsOneOf(stellarType, { STELLAR_TYPE::NEUTRON_STAR})) { 
+            m_SupernovaDetails.kickMagnitude = m_SupernovaDetails.drawnKickMagnitude; 
+            //m_Mass = m_SupernovaDetails.totalMassAtCOFormation;
+        }
+
+
 
         // stash SN details for later printing to the SSE Supernova log
         // can't print it now because we may revert state (in Star::EvolveOneTimestep())
